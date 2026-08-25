@@ -1,0 +1,299 @@
+version: 2
+
+sources:
+  - name: rrhh
+    description: >
+      Sources raw del dominio de Recursos Humanos. Contiene datos extraídos desde
+      sistemas origen de RRHH para personal, nóminas, evaluaciones, consultoras
+      y departamentos.
+    schema: raw
+
+    tables:
+      - name: src_rrhh_personal
+        description: >
+          Tabla raw de personal de RRHH. Contiene información identificativa,
+          organizativa, salarial y de evaluación por empleado.
+        columns:
+          - name: fecha_extraccion
+            description: Fecha en la que se extrajo la información desde el sistema origen.
+            tests:
+              - not_null
+
+          - name: sistema_origen
+            description: Sistema desde el que procede el registro.
+            tests:
+              - not_null
+
+          - name: archivo_origen
+            description: Nombre o referencia del archivo origen desde el que se cargó el registro.
+
+          - name: nro_linea_archivo
+            description: Número de línea del archivo origen, útil para trazabilidad y depuración.
+
+          - name: legajo
+            description: Identificador interno del empleado.
+            tests:
+              - not_null
+              - unique
+
+          - name: nombre
+            description: Nombre del empleado.
+
+          - name: apellido
+            description: Apellido del empleado.
+
+          - name: departamento_codigo
+            description: Código del departamento al que pertenece el empleado.
+            tests:
+              - relationships:
+                  to: source('rrhh', 'src_rrhh_departamentos')
+                  field: departamento_codigo
+
+          - name: departamento_descripcion
+            description: Descripción del departamento al que pertenece el empleado.
+
+          - name: tipo_empleado
+            description: Tipo o categoría del empleado.
+
+          - name: salario
+            description: Salario asociado al empleado.
+
+          - name: precio_hora
+            description: Precio hora ordinaria del empleado.
+
+          - name: precio_hora_extra
+            description: Precio hora extra del empleado.
+
+          - name: consultora_cuit
+            description: Identificador fiscal de la consultora asociada al empleado, si aplica.
+            tests:
+              - relationships:
+                  to: source('rrhh', 'src_rrhh_consultoras')
+                  field: consultora_cuit
+
+          - name: consultora_razon_social
+            description: Razón social de la consultora asociada al empleado, si aplica.
+
+          - name: evaluacion_2024
+            description: Resultado de evaluación del empleado correspondiente al año 2024.
+
+          - name: evaluacion_2023
+            description: Resultado de evaluación del empleado correspondiente al año 2023.
+
+          - name: evaluacion_2022
+            description: Resultado de evaluación del empleado correspondiente al año 2022.
+
+          - name: evaluacion_2021
+            description: Resultado de evaluación del empleado correspondiente al año 2021.
+
+          - name: evaluacion_2020
+            description: Resultado de evaluación del empleado correspondiente al año 2020.
+
+          - name: rotacion
+            description: Indicador numérico asociado a la rotación del empleado.
+            tests:
+              - accepted_values:
+                  values: [0, 1]
+                  quote: false
+
+
+      - name: src_rrhh_nominas
+        description: >
+          Tabla raw de nóminas. Contiene información de liquidaciones,
+          importes salariales, horas, descuentos y coste estimado de empresa.
+        columns:
+          - name: sistema_origen
+            description: Sistema desde el que procede el registro.
+            tests:
+              - not_null
+
+          - name: fecha_extraccion
+            description: Fecha en la que se extrajo la información desde el sistema origen.
+            tests:
+              - not_null
+
+          - name: recibo_nomina_id
+            description: Identificador del recibo de nómina.
+            tests:
+              - not_null
+              - unique
+
+          - name: periodo
+            description: Periodo de liquidación de la nómina.
+            tests:
+              - not_null
+
+          - name: legajo
+            description: Identificador interno del empleado.
+            tests:
+              - not_null
+              - relationships:
+                  to: source('rrhh', 'src_rrhh_personal')
+                  field: legajo
+
+          - name: nombre
+            description: Nombre del empleado.
+
+          - name: apellido
+            description: Apellido del empleado.
+
+          - name: departamento_codigo
+            description: Código del departamento asociado a la nómina.
+            tests:
+              - relationships:
+                  to: source('rrhh', 'src_rrhh_departamentos')
+                  field: departamento_codigo
+
+          - name: tipo_empleado
+            description: Tipo o categoría del empleado.
+
+          - name: consultora_cuit
+            description: Identificador fiscal de la consultora asociada al empleado, si aplica.
+            tests:
+              - relationships:
+                  to: source('rrhh', 'src_rrhh_consultoras')
+                  field: consultora_cuit
+
+          - name: estado_liquidacion
+            description: Estado de la liquidación de la nómina.
+
+          - name: dias_liquidados
+            description: Número de días liquidados en el periodo.
+
+          - name: salario_mensual
+            description: Salario mensual utilizado para la liquidación.
+
+          - name: horas_base
+            description: Número de horas ordinarias liquidadas.
+
+          - name: importe_horas_base
+            description: Importe correspondiente a las horas ordinarias liquidadas.
+
+          - name: horas_extra
+            description: Número de horas extra liquidadas.
+
+          - name: importe_horas_extra
+            description: Importe correspondiente a las horas extra liquidadas.
+
+          - name: bono_productividad
+            description: Importe del bono de productividad aplicado en la liquidación.
+
+          - name: descuento_ausencias
+            description: Importe descontado por ausencias.
+
+          - name: total_bruto
+            description: Importe bruto total de la nómina.
+
+          - name: coste_empresa_estimado
+            description: Coste estimado de empresa asociado a la nómina.
+
+
+      - name: src_rrhh_evaluaciones
+        description: >
+          Tabla raw de evaluaciones de empleados. Contiene resultados de evaluación
+          por empleado, departamento y año.
+        columns:
+          - name: sistema_origen
+            description: Sistema desde el que procede el registro.
+            tests:
+              - not_null
+
+          - name: fecha_extraccion
+            description: Fecha en la que se extrajo la información desde el sistema origen.
+            tests:
+              - not_null
+
+          - name: nro_linea_archivo
+            description: Número de línea del archivo origen, útil para trazabilidad y depuración.
+
+          - name: legajo
+            description: Identificador interno del empleado evaluado.
+            tests:
+              - not_null
+              - relationships:
+                  to: source('rrhh', 'src_rrhh_personal')
+                  field: legajo
+
+          - name: nombre
+            description: Nombre del empleado evaluado.
+
+          - name: apellido
+            description: Apellido del empleado evaluado.
+
+          - name: departamento_codigo
+            description: Código del departamento asociado a la evaluación.
+            tests:
+              - relationships:
+                  to: source('rrhh', 'src_rrhh_departamentos')
+                  field: departamento_codigo
+
+          - name: anio_evaluacion
+            description: Año al que corresponde la evaluación.
+            tests:
+              - not_null
+              - accepted_values:
+                  values: [2020, 2021, 2022, 2023, 2024]
+                  quote: false
+
+          - name: resultado_evaluacion
+            description: Resultado obtenido por el empleado en la evaluación.
+
+
+      - name: src_rrhh_consultoras
+        description: >
+          Tabla raw de consultoras proveedoras. Contiene identificadores fiscales,
+          razón social y estado del proveedor.
+        columns:
+          - name: consultora_cuit
+            description: Identificador fiscal de la consultora.
+            tests:
+              - not_null
+              - unique
+
+          - name: consultora_razon_social
+            description: Razón social de la consultora.
+            tests:
+              - not_null
+
+          - name: estado_proveedor
+            description: Estado actual de la consultora como proveedor.
+
+          - name: fecha_extraccion
+            description: Fecha en la que se extrajo la información desde el sistema origen.
+            tests:
+              - not_null
+
+          - name: sistema_origen
+            description: Sistema desde el que procede el registro.
+            tests:
+              - not_null
+
+
+      - name: src_rrhh_departamentos
+        description: >
+          Tabla raw de departamentos. Contiene códigos, descripciones y estado
+          de actividad de los departamentos.
+        columns:
+          - name: departamento_codigo
+            description: Código identificador del departamento.
+            tests:
+              - not_null
+              - unique
+
+          - name: departamento_descripcion
+            description: Descripción o nombre del departamento.
+            tests:
+              - not_null
+
+          - name: activo
+            description: Indicador de si el departamento está activo.
+
+          - name: fecha_extraccion
+            description: Fecha en la que se extrajo la información desde el sistema origen.
+            tests:
+              - not_null
+
+          - name: sistema_origen
+            description: Sistema desde el que procede el registro.
+            tests:
+              - not_null

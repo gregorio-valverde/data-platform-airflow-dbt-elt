@@ -21,7 +21,7 @@ elt_dag = DagEltGenerator(
     default_conn_id="dw_postgres",
     dbt_project_dir="/usr/local/airflow/dbt",
     dbt_profiles_dir="/usr/local/airflow/dbt",
-    dbt_target="",
+    dbt_target="rrhh",
     max_active_runs=1,
     max_active_tasks=3,
 ).build()
