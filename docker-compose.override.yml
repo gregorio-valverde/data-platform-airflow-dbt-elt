@@ -44,14 +44,30 @@ services:
   dw_postgres:
     image: postgres:16
     container_name: dw_postgres_gvn
-    environment:
-      POSTGRES_USER: ${DW_POSTGRES_USER:-dw_user}
-      POSTGRES_PASSWORD: ${DW_POSTGRES_PASSWORD:-dw_password}
-      POSTGRES_DB: ${DW_POSTGRES_DB:-dw_hr}
+
+    env_file:
+      - .env
+
+    entrypoint:
+      - /bin/sh
+      - -ec
+      - |
+        : "$${DW_POSTGRES_USER:?DW_POSTGRES_USER is required}"
+        : "$${DW_POSTGRES_PASSWORD:?DW_POSTGRES_PASSWORD is required}"
+        : "$${DW_POSTGRES_DB:?DW_POSTGRES_DB is required}"
+
+        export POSTGRES_USER="$${DW_POSTGRES_USER}"
+        export POSTGRES_PASSWORD="$${DW_POSTGRES_PASSWORD}"
+        export POSTGRES_DB="$${DW_POSTGRES_DB}"
+
+        exec docker-entrypoint.sh postgres
+
     ports:
       - "5433:5432"
+
     volumes:
       - dw_postgres_data:/var/lib/postgresql/data
+
     networks:
       - airflow_gvn_net
 

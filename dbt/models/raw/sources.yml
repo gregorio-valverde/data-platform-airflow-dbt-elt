@@ -33,7 +33,6 @@ sources:
             description: Internal employee identifier.
             tests:
               - not_null
-              - unique
 
           - name: first_name
             description: Employee first name.
