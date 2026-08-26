@@ -1,6 +1,0 @@
-departamento_codigo,departamento_descripcion,activo,fecha_extraccion,sistema_origen
-D001,Finanzas,S,2026-06-29,sistema_rrhh_legacy
-D002,Recursos Humanos,S,2026-06-29,sistema_rrhh_legacy
-D003,IT,S,2026-06-29,sistema_rrhh_legacy
-D004,Ventas,S,2026-06-29,sistema_rrhh_legacy
-D005,Operaciones,S,2026-06-29,sistema_rrhh_legacy

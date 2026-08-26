@@ -7,29 +7,33 @@ from include.connections.postgres.client import PostgresClient
 
 def _q(identifier: str) -> str:
     if identifier is None or str(identifier).strip() == "":
-        raise ValueError("Identificador SQL vacio.")
+        raise ValueError("SQL identifier cannot be empty.")
     return '"' + str(identifier).replace('"', '""') + '"'
 
 
 class PostgresSync:
     """
-    Sincroniza una tabla en PostgreSQL a partir de un YAML con la definicion,
-    siempre que sync_enabled sea True.
+    Synchronize a PostgreSQL table from a YAML contract when sync_enabled is true.
 
-    YAML esperado:
+    Expected YAML structure:
         schema: raw
-        table: src_rrhh_personal
+        table: src_hr_employees
         columns:
-          - name: legajo
+          - name: employee_id
             type: BIGINT
             nullable: false
             primary_key: true
         indexes:
-          - columns: legajo
+          - columns: employee_id
             unique: false
     """
 
-    def __init__(self, yaml_path: str, conn_id: str = "dw_postgres", sync_enabled: bool = True):
+    def __init__(
+        self,
+        yaml_path: str,
+        conn_id: str = "dw_postgres",
+        sync_enabled: bool = True,
+    ):
         self.yml_path = yaml_path
         self.conn_id = conn_id
         self.sync_enabled = sync_enabled
@@ -41,7 +45,7 @@ class PostgresSync:
 
     def _load_yaml(self):
         if not os.path.exists(self.yml_path):
-            raise FileNotFoundError(f"YAML no encontrado en {self.yml_path}")
+            raise FileNotFoundError(f"YAML file not found: {self.yml_path}")
         with open(self.yml_path, "r", encoding="utf-8") as f:
             return yaml.safe_load(f)
 
@@ -85,7 +89,7 @@ class PostgresSync:
     def _create_table(self):
         columns = self.schema_def.get("columns", [])
         if not columns:
-            raise ValueError("El esquema no contiene definiciones de columnas.")
+            raise ValueError("The YAML contract does not define any columns.")
 
         column_defs = []
         pk_columns = []
@@ -112,7 +116,7 @@ class PostgresSync:
             );
         """
 
-        logging.info("SQL generado para CREATE TABLE:")
+        logging.info("Generated CREATE TABLE statement:")
         logging.info(create_sql)
         self.cursor.execute(create_sql)
 
@@ -130,8 +134,11 @@ class PostgresSync:
 
             unique = "UNIQUE" if idx.get("unique", False) else ""
             index_name = idx.get("name") or f"ix_{self.table}_{'_'.join(cols_for_name)}"
-            sql = f"CREATE {unique} INDEX IF NOT EXISTS {_q(index_name)} ON {_q(self.schema)}.{_q(self.table)} ({cols_sql});"
-            logging.info(f"Creando indice: {sql}")
+            sql = (
+                f"CREATE {unique} INDEX IF NOT EXISTS {_q(index_name)} "
+                f"ON {_q(self.schema)}.{_q(self.table)} ({cols_sql});"
+            )
+            logging.info("Creating index: %s", sql)
             self.cursor.execute(sql)
 
     def _alter_table(self):
@@ -141,20 +148,31 @@ class PostgresSync:
         for col in self.schema_def["columns"]:
             if col["name"] not in existing_cols:
                 nullable = "NULL" if col.get("nullable", True) else "NOT NULL"
-                sql = f"ALTER TABLE {_q(self.schema)}.{_q(self.table)} ADD COLUMN {_q(col['name'])} {col['type']} {nullable};"
-                logging.info(f"Anadiendo columna {col['name']} a {self.schema}.{self.table}")
+                sql = (
+                    f"ALTER TABLE {_q(self.schema)}.{_q(self.table)} "
+                    f"ADD COLUMN {_q(col['name'])} {col['type']} {nullable};"
+                )
+                logging.info(
+                    "Adding column %s to %s.%s", col["name"], self.schema, self.table
+                )
                 self.cursor.execute(sql)
                 added = True
 
         if not added:
-            logging.info(f"La tabla {self.schema}.{self.table} ya tiene todas las columnas definidas.")
+            logging.info(
+                "Table %s.%s already contains every declared column.",
+                self.schema,
+                self.table,
+            )
 
         self._create_indexes()
 
     def sync(self):
         if not self.sync_enabled:
             logging.info(
-                f"Sync deshabilitado para {self.schema}.{self.table} (sync_enabled=False). No se realizan cambios."
+                "Synchronization disabled for %s.%s; no changes were made.",
+                self.schema,
+                self.table,
             )
             return
 
@@ -167,7 +185,7 @@ class PostgresSync:
                 self._create_table()
             self.conn.commit()
         except Exception as e:
-            logging.error(f"Error sincronizando la tabla {self.schema}.{self.table}: {e}")
+            logging.error("Could not synchronize %s.%s: %s", self.schema, self.table, e)
             if self.conn:
                 self.conn.rollback()
             raise

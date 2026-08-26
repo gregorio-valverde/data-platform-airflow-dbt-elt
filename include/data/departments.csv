@@ -1,0 +1,6 @@
+department_code,department_name,is_active,extraction_date,source_system
+D001,Finance,true,2026-06-29,legacy_hr_system
+D002,Human Resources,true,2026-06-29,legacy_hr_system
+D003,IT,true,2026-06-29,legacy_hr_system
+D004,Sales,true,2026-06-29,legacy_hr_system
+D005,Operations,true,2026-06-29,legacy_hr_system

@@ -3,6 +3,7 @@ import os
 import uuid
 import pandas as pd
 
+
 def df_parquet_save(df: pd.DataFrame) -> str:
     temp_dir = tempfile.gettempdir()
     filename = f"df_{uuid.uuid4().hex}.parquet"

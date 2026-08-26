@@ -1,39 +1,39 @@
-table: src_rrhh_evaluaciones
+table: src_hr_performance_reviews
 schema: raw
 
 columns:
-  - name: sistema_origen
+  - name: source_system
     type: TEXT
     nullable: true
-  - name: fecha_extraccion
+  - name: extraction_date
     type: DATE
     nullable: true
-  - name: nro_linea_archivo
+  - name: source_row_number
     type: INTEGER
     nullable: true
-  - name: legajo
+  - name: employee_id
     type: INTEGER
     nullable: true
-  - name: nombre
+  - name: first_name
     type: TEXT
     nullable: true
-  - name: apellido
+  - name: last_name
     type: TEXT
     nullable: true
-  - name: departamento_codigo
+  - name: department_code
     type: TEXT
     nullable: true
-  - name: anio_evaluacion
+  - name: review_year
     type: INTEGER
     nullable: true
-  - name: resultado_evaluacion
+  - name: performance_rating
     type: TEXT
     nullable: true
 
 indexes:
-  - columns: legajo
+  - columns: employee_id
     unique: false
-  - columns: departamento_codigo
+  - columns: department_code
     unique: false
-  - columns: anio_evaluacion
+  - columns: review_year
     unique: false

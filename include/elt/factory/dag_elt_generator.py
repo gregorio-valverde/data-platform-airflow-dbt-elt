@@ -29,9 +29,9 @@ def _call_extractor(
     context: dict,
 ) -> pd.DataFrame:
     """
-    Llama al extractor manteniendo compatibilidad con varios estilos de firma.
+    Call an extractor while supporting multiple function signatures.
 
-    Estilos soportados:
+    Supported signatures:
       - extractor(**elt_vars, **context)
       - extractor(elt_vars=elt_vars, **context)
       - extractor(etl_vars=elt_vars, **context)
@@ -51,20 +51,20 @@ def _call_extractor(
 
 def _apply_yaml_contract(df: pd.DataFrame, yaml_path: str) -> pd.DataFrame:
     """
-    Aplica el contrato definido en el YAML:
+    Apply the contract defined in YAML:
 
-      - conserva solo columnas declaradas en el YAML
-      - respeta el orden del YAML
-      - castea tipos según YAML
+      - retain only columns declared in YAML
+      - preserve the YAML column order
+      - cast values to the declared YAML types
 
-    La limpieza funcional y normalización deben hacerse después en dbt.
+    Business cleaning and normalization belong in the downstream dbt models.
     """
     valid_columns = read_columns_yaml_list(yaml_path)
     selected_columns = [column for column in valid_columns if column in df.columns]
 
     if not selected_columns:
         raise ValueError(
-            "0 columnas tras aplicar YAML. "
+            "No columns remained after applying the YAML contract. "
             f"yaml_path={yaml_path}. "
             f"yaml_columns={valid_columns}. "
             f"df_columns={list(df.columns)}"
@@ -101,36 +101,36 @@ def _build_dbt_command(
 
 class DagEltGenerator:
     """
-    Generador simple de DAGs ELT para Airflow + PostgreSQL + dbt.
+    Generate Airflow ELT DAGs backed by PostgreSQL and dbt.
 
-    Flujo por pipeline:
+    Per-pipeline flow:
 
       1. gate_source
-         Decide si el pipeline se ejecuta.
+         Decide whether the pipeline should run.
 
       2. sync_target
-         Crea/sincroniza la tabla raw en PostgreSQL usando el YAML.
+         Create or synchronize the PostgreSQL raw table from YAML.
 
       3. extract_source
-         Ejecuta el extractor y devuelve un DataFrame.
+         Run the extractor and return a DataFrame.
 
       4. load_raw
-         Carga el DataFrame en PostgreSQL.
+         Load the DataFrame into PostgreSQL.
 
-    Flujo final opcional:
+    Optional final step:
 
       5. transform_dbt
-         Ejecuta dbt run si dbt_tag no es None.
+         Run dbt when dbt_tag is not None.
 
-    Ejemplo de pipeline:
+    Example pipeline:
 
     pipelines = [
         {
-            "pipeline_id": "rrhh_personal",
-            "yaml_path": "include/etl_config/rrhh/raw/src/src_rrhh_personal.yml",
-            "extractor": extract_src_rrhh_personal,
+            "pipeline_id": "employees",
+            "yaml_path": "include/elt/config/src/src_hr_employees.yml",
+            "extractor": extract_src_hr_employees,
             "conn_id": "dw_postgres",
-            "load_mode_default": "massive",
+            "load_mode_default": "full_refresh",
             "enabled": True,
             "sync_enabled": True,
         }
@@ -205,7 +205,7 @@ class DagEltGenerator:
                     return {}
 
                 if not isinstance(vars_dict, dict):
-                    raise ValueError("dbt_vars_callable debe devolver un dict")
+                    raise ValueError("dbt_vars_callable must return a dictionary")
 
                 return vars_dict
 
@@ -230,7 +230,7 @@ class DagEltGenerator:
                 sync_conn_id = pipeline.get("sync_conn_id", conn_id)
                 load_conn_id = pipeline.get("load_conn_id", conn_id)
 
-                load_mode_default = pipeline.get("load_mode_default", "massive")
+                load_mode_default = pipeline.get("load_mode_default", "full_refresh")
                 chunk_size = int(pipeline.get("chunk_size", self.chunk_size))
 
                 group_id = f"elt_raw_{pipeline_id}"
@@ -258,7 +258,7 @@ class DagEltGenerator:
 
                                 if not isinstance(value, (list, tuple, set)):
                                     raise ValueError(
-                                        "include_pipelines/exclude_pipelines debe ser una lista"
+                                        "include_pipelines/exclude_pipelines must be a list"
                                     )
 
                                 return {str(item) for item in value}
@@ -323,7 +323,7 @@ class DagEltGenerator:
                             )
 
                             if df is None or df.empty:
-                                raise AirflowSkipException("No hay datos para cargar")
+                                raise AirflowSkipException("No data available to load")
 
                             df = _apply_yaml_contract(
                                 df=df,
@@ -332,7 +332,7 @@ class DagEltGenerator:
 
                             if df.empty:
                                 raise AirflowSkipException(
-                                    "DataFrame vacío tras aplicar contrato YAML"
+                                    "The DataFrame is empty after applying the YAML contract"
                                 )
 
                             return df_parquet_save(df)
@@ -364,7 +364,7 @@ class DagEltGenerator:
                             df = df_parquet_read_delete(parquet_path)
 
                             if df is None or df.empty:
-                                raise AirflowSkipException("No hay datos para cargar")
+                                raise AirflowSkipException("No data available to load")
 
                             loader = PostgresLoader(
                                 yaml_path=yaml_path,

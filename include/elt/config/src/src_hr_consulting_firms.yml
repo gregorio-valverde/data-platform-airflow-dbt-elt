@@ -1,23 +1,23 @@
-table: src_rrhh_departamentos
+table: src_hr_consulting_firms
 schema: raw
 
 columns:
-  - name: departamento_codigo
+  - name: consulting_firm_tax_id
     type: TEXT
     nullable: true
-  - name: departamento_descripcion
+  - name: consulting_firm_legal_name
     type: TEXT
     nullable: true
-  - name: activo
+  - name: vendor_status
     type: TEXT
     nullable: true
-  - name: fecha_extraccion
+  - name: extraction_date
     type: DATE
     nullable: true
-  - name: sistema_origen
+  - name: source_system
     type: TEXT
     nullable: true
 
 indexes:
-  - columns: departamento_codigo
+  - columns: consulting_firm_tax_id
     unique: false
