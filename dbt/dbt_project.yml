@@ -1,8 +1,8 @@
-name: "dw_rrhh"
+name: "dw_hr"
 version: "1.0.0"
 config-version: 2
 
-profile: "dw_rrhh"
+profile: "dw_hr"
 
 model-paths: ["models"]
 seed-paths: ["seeds"]
@@ -15,7 +15,7 @@ clean-targets:
   - "dbt_packages"
 
 models:
-  dw_rrhh:
+  dw_hr:
     staging:
       +schema: staging
       +materialized: view

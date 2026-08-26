@@ -1,79 +1,79 @@
-table: src_rrhh_nominas
+table: src_hr_payroll
 schema: raw
 
 columns:
-  - name: sistema_origen
+  - name: source_system
     type: TEXT
     nullable: true
-  - name: fecha_extraccion
+  - name: extraction_date
     type: DATE
     nullable: true
-  - name: recibo_nomina_id
+  - name: payroll_receipt_id
     type: TEXT
     nullable: true
-  - name: periodo
+  - name: payroll_period
     type: TEXT
     nullable: true
-  - name: legajo
+  - name: employee_id
     type: INTEGER
     nullable: true
-  - name: nombre
+  - name: first_name
     type: TEXT
     nullable: true
-  - name: apellido
+  - name: last_name
     type: TEXT
     nullable: true
-  - name: departamento_codigo
+  - name: department_code
     type: TEXT
     nullable: true
-  - name: tipo_empleado
+  - name: employment_type
     type: TEXT
     nullable: true
-  - name: consultora_cuit
+  - name: consulting_firm_tax_id
     type: TEXT
     nullable: true
-  - name: estado_liquidacion
+  - name: payroll_status
     type: TEXT
     nullable: true
-  - name: dias_liquidados
+  - name: paid_days
     type: INTEGER
     nullable: true
-  - name: salario_mensual
+  - name: monthly_salary
     type: NUMERIC(14,2)
     nullable: true
-  - name: horas_base
+  - name: regular_hours
     type: NUMERIC(10,2)
     nullable: true
-  - name: importe_horas_base
+  - name: regular_hours_amount
     type: NUMERIC(14,2)
     nullable: true
-  - name: horas_extra
+  - name: overtime_hours
     type: NUMERIC(10,2)
     nullable: true
-  - name: importe_horas_extra
+  - name: overtime_amount
     type: NUMERIC(14,2)
     nullable: true
-  - name: bono_productividad
+  - name: productivity_bonus
     type: NUMERIC(14,2)
     nullable: true
-  - name: descuento_ausencias
+  - name: absence_deduction
     type: NUMERIC(14,2)
     nullable: true
-  - name: total_bruto
+  - name: gross_pay
     type: NUMERIC(14,2)
     nullable: true
-  - name: coste_empresa_estimado
+  - name: estimated_employer_cost
     type: NUMERIC(14,2)
     nullable: true
 
 indexes:
-  - columns: recibo_nomina_id
+  - columns: payroll_receipt_id
     unique: false
-  - columns: periodo
+  - columns: payroll_period
     unique: false
-  - columns: legajo
+  - columns: employee_id
     unique: false
-  - columns: departamento_codigo
+  - columns: department_code
     unique: false
-  - columns: consultora_cuit
+  - columns: consulting_firm_tax_id
     unique: false

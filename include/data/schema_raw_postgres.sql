@@ -1,77 +1,77 @@
 create schema if not exists raw;
 
-create table if not exists raw.src_rrhh_personal (
-    fecha_extraccion date,
-    sistema_origen text,
-    archivo_origen text,
-    nro_linea_archivo integer,
-    legajo integer,
-    nombre text,
-    apellido text,
-    departamento_codigo text,
-    departamento_descripcion text,
-    tipo_empleado text,
-    salario numeric(14,2),
-    precio_hora numeric(14,2),
-    precio_hora_extra numeric(14,2),
-    consultora_cuit text,
-    consultora_razon_social text,
-    evaluacion_2024 text,
-    evaluacion_2023 text,
-    evaluacion_2022 text,
-    evaluacion_2021 text,
-    evaluacion_2020 text,
-    rotacion integer
+create table if not exists raw.src_hr_employees (
+    extraction_date date,
+    source_system text,
+    source_file text,
+    source_row_number integer,
+    employee_id integer,
+    first_name text,
+    last_name text,
+    department_code text,
+    department_name text,
+    employment_type text,
+    salary numeric(14,2),
+    hourly_rate numeric(14,2),
+    overtime_hourly_rate numeric(14,2),
+    consulting_firm_tax_id text,
+    consulting_firm_legal_name text,
+    performance_rating_2024 text,
+    performance_rating_2023 text,
+    performance_rating_2022 text,
+    performance_rating_2021 text,
+    performance_rating_2020 text,
+    turnover_flag integer
 );
 
-create table if not exists raw.src_rrhh_departamentos (
-    departamento_codigo text,
-    departamento_descripcion text,
-    activo text,
-    fecha_extraccion date,
-    sistema_origen text
+create table if not exists raw.src_hr_departments (
+    department_code text,
+    department_name text,
+    is_active text,
+    extraction_date date,
+    source_system text
 );
 
-create table if not exists raw.src_rrhh_consultoras (
-    consultora_cuit text,
-    consultora_razon_social text,
-    estado_proveedor text,
-    fecha_extraccion date,
-    sistema_origen text
+create table if not exists raw.src_hr_consulting_firms (
+    consulting_firm_tax_id text,
+    consulting_firm_legal_name text,
+    vendor_status text,
+    extraction_date date,
+    source_system text
 );
 
-create table if not exists raw.src_rrhh_evaluaciones (
-    sistema_origen text,
-    fecha_extraccion date,
-    nro_linea_archivo integer,
-    legajo integer,
-    nombre text,
-    apellido text,
-    departamento_codigo text,
-    anio_evaluacion integer,
-    resultado_evaluacion text
+create table if not exists raw.src_hr_performance_reviews (
+    source_system text,
+    extraction_date date,
+    source_row_number integer,
+    employee_id integer,
+    first_name text,
+    last_name text,
+    department_code text,
+    review_year integer,
+    performance_rating text
 );
 
-create table if not exists raw.src_nominas_2025 (
-    sistema_origen text,
-    fecha_extraccion date,
-    recibo_nomina_id text,
-    periodo text,
-    legajo integer,
-    nombre text,
-    apellido text,
-    departamento_codigo text,
-    tipo_empleado text,
-    consultora_cuit text,
-    estado_liquidacion text,
-    dias_liquidados integer,
-    salario_mensual numeric(14,2),
-    horas_base numeric(10,2),
-    importe_horas_base numeric(14,2),
-    horas_extra numeric(10,2),
-    importe_horas_extra numeric(14,2),
-    bono_productividad numeric(14,2),
-    descuento_ausencias numeric(14,2),
-    total_bruto numeric(14,2),
-    coste_empresa_estimado numeric(14,2)
+create table if not exists raw.src_hr_payroll (
+    source_system text,
+    extraction_date date,
+    payroll_receipt_id text,
+    payroll_period text,
+    employee_id integer,
+    first_name text,
+    last_name text,
+    department_code text,
+    employment_type text,
+    consulting_firm_tax_id text,
+    payroll_status text,
+    paid_days integer,
+    monthly_salary numeric(14,2),
+    regular_hours numeric(10,2),
+    regular_hours_amount numeric(14,2),
+    overtime_hours numeric(10,2),
+    overtime_amount numeric(14,2),
+    productivity_bonus numeric(14,2),
+    absence_deduction numeric(14,2),
+    gross_pay numeric(14,2),
+    estimated_employer_cost numeric(14,2)
 );

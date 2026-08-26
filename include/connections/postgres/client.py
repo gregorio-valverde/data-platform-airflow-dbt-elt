@@ -13,22 +13,23 @@ import psycopg2
 
 class PostgresClient:
     """
-    Factoria de conexiones PostgreSQL:
+    Build PostgreSQL connections for:
+
     - SQLAlchemy engine (postgresql+psycopg2)
-    - psycopg2 connection (opcional)
+    - optional direct psycopg2 connection
 
-    Lee parametros desde Airflow Connection + extras.
+    Connection parameters come from an Airflow connection and its extras.
 
-    Airflow Connection esperada:
+    Expected Airflow connection:
         conn_id: dw_postgres
         conn_type: postgres
         host: dw_postgres
-        schema: dw_rrhh
+        schema: dw_hr
         login: dw_user
         password: dw_password
         port: 5432
 
-    Extras opcionales:
+    Optional extras:
         {
           "sslmode": "require",
           "application_name": "airflow"

@@ -8,8 +8,8 @@ from include.connections.postgres.client import PostgresClient
 
 class PostgresUpdateExecutor:
     """
-    Ejecuta sentencias UPDATE, DELETE, INSERT, TRUNCATE, CREATE, ALTER, DROP o WITH
-    en PostgreSQL leyendo el SQL desde un archivo.
+    Execute a PostgreSQL UPDATE, DELETE, INSERT, TRUNCATE, CREATE, ALTER, DROP,
+    or WITH statement read from a SQL file.
     """
 
     def __init__(self, conn_id: str):
@@ -22,19 +22,19 @@ class PostgresUpdateExecutor:
 
         path = Path(sql_path)
         if not path.exists():
-            raise FileNotFoundError(f"No existe el archivo SQL: {sql_path}")
+            raise FileNotFoundError(f"SQL file does not exist: {sql_path}")
 
         sql_raw = path.read_text(encoding="utf-8")
         sql_clean = sql_raw.lstrip()
         if not sql_clean:
-            raise ValueError("El archivo SQL esta vacio.")
+            raise ValueError("The SQL file is empty.")
 
         first_word = sql_clean.split()[0].upper()
         allowed = ("UPDATE", "DELETE", "INSERT", "TRUNCATE", "CREATE", "ALTER", "DROP", "WITH")
         if first_word not in allowed:
-            raise ValueError(f"Solo se permiten sentencias {allowed} en este executor.")
+            raise ValueError(f"This executor only allows {allowed} statements.")
 
         with self.engine.begin() as conn:
             result = conn.execute(text(sql_raw), params)
-            logging.info(f"Query ejecutada correctamente. Filas afectadas: {result.rowcount}")
+            logging.info("Query completed successfully. Affected rows: %s", result.rowcount)
             return result.rowcount

@@ -1,23 +1,23 @@
-table: src_rrhh_consultoras
+table: src_hr_departments
 schema: raw
 
 columns:
-  - name: consultora_cuit
+  - name: department_code
     type: TEXT
     nullable: true
-  - name: consultora_razon_social
+  - name: department_name
     type: TEXT
     nullable: true
-  - name: estado_proveedor
+  - name: is_active
     type: TEXT
     nullable: true
-  - name: fecha_extraccion
+  - name: extraction_date
     type: DATE
     nullable: true
-  - name: sistema_origen
+  - name: source_system
     type: TEXT
     nullable: true
 
 indexes:
-  - columns: consultora_cuit
+  - columns: department_code
     unique: false

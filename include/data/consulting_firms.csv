@@ -1,0 +1,5 @@
+consulting_firm_tax_id,consulting_firm_legal_name,vendor_status,extraction_date,source_system
+30-12345678-9,Alpha Consulting,ACTIVE,2026-06-29,legacy_hr_system
+30-87654321-0,Beta Consulting,ACTIVE,2026-06-29,legacy_hr_system
+30-99887766-1,Delta Consulting,ACTIVE,2026-06-29,legacy_hr_system
+30-11223344-5,Gamma Consulting,ACTIVE,2026-06-29,legacy_hr_system

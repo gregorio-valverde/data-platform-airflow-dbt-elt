@@ -1,299 +1,291 @@
 version: 2
 
 sources:
-  - name: rrhh
+  - name: hr
     description: >
-      Sources raw del dominio de Recursos Humanos. Contiene datos extraídos desde
-      sistemas origen de RRHH para personal, nóminas, evaluaciones, consultoras
-      y departamentos.
+      Raw Human Resources data loaded from synthetic operational sources for
+      employees, payroll, performance reviews, consulting firms, and departments.
     schema: raw
 
     tables:
-      - name: src_rrhh_personal
+      - name: src_hr_employees
         description: >
-          Tabla raw de personal de RRHH. Contiene información identificativa,
-          organizativa, salarial y de evaluación por empleado.
+          Employee master data containing identity, organizational, compensation,
+          consulting-firm, performance, and turnover attributes.
         columns:
-          - name: fecha_extraccion
-            description: Fecha en la que se extrajo la información desde el sistema origen.
+          - name: extraction_date
+            description: Date on which the record was extracted from the source system.
             tests:
               - not_null
 
-          - name: sistema_origen
-            description: Sistema desde el que procede el registro.
+          - name: source_system
+            description: Operational system from which the record originated.
             tests:
               - not_null
 
-          - name: archivo_origen
-            description: Nombre o referencia del archivo origen desde el que se cargó el registro.
+          - name: source_file
+            description: Name of the source file from which the record was loaded.
 
-          - name: nro_linea_archivo
-            description: Número de línea del archivo origen, útil para trazabilidad y depuración.
+          - name: source_row_number
+            description: Source-file row number used for traceability and troubleshooting.
 
-          - name: legajo
-            description: Identificador interno del empleado.
+          - name: employee_id
+            description: Internal employee identifier.
             tests:
               - not_null
               - unique
 
-          - name: nombre
-            description: Nombre del empleado.
+          - name: first_name
+            description: Employee first name.
 
-          - name: apellido
-            description: Apellido del empleado.
+          - name: last_name
+            description: Employee last name.
 
-          - name: departamento_codigo
-            description: Código del departamento al que pertenece el empleado.
+          - name: department_code
+            description: Code of the department to which the employee belongs.
             tests:
               - relationships:
-                  to: source('rrhh', 'src_rrhh_departamentos')
-                  field: departamento_codigo
+                  to: source('hr', 'src_hr_departments')
+                  field: department_code
 
-          - name: departamento_descripcion
-            description: Descripción del departamento al que pertenece el empleado.
+          - name: department_name
+            description: Name of the department to which the employee belongs.
 
-          - name: tipo_empleado
-            description: Tipo o categoría del empleado.
+          - name: employment_type
+            description: Employee engagement category.
 
-          - name: salario
-            description: Salario asociado al empleado.
+          - name: salary
+            description: Salary assigned to the employee.
 
-          - name: precio_hora
-            description: Precio hora ordinaria del empleado.
+          - name: hourly_rate
+            description: Standard hourly rate for the employee.
 
-          - name: precio_hora_extra
-            description: Precio hora extra del empleado.
+          - name: overtime_hourly_rate
+            description: Overtime hourly rate for the employee.
 
-          - name: consultora_cuit
-            description: Identificador fiscal de la consultora asociada al empleado, si aplica.
+          - name: consulting_firm_tax_id
+            description: Tax identifier of the associated consulting firm, when applicable.
             tests:
               - relationships:
-                  to: source('rrhh', 'src_rrhh_consultoras')
-                  field: consultora_cuit
+                  to: source('hr', 'src_hr_consulting_firms')
+                  field: consulting_firm_tax_id
 
-          - name: consultora_razon_social
-            description: Razón social de la consultora asociada al empleado, si aplica.
+          - name: consulting_firm_legal_name
+            description: Legal name of the associated consulting firm, when applicable.
 
-          - name: evaluacion_2024
-            description: Resultado de evaluación del empleado correspondiente al año 2024.
+          - name: performance_rating_2024
+            description: Employee performance rating for 2024.
 
-          - name: evaluacion_2023
-            description: Resultado de evaluación del empleado correspondiente al año 2023.
+          - name: performance_rating_2023
+            description: Employee performance rating for 2023.
 
-          - name: evaluacion_2022
-            description: Resultado de evaluación del empleado correspondiente al año 2022.
+          - name: performance_rating_2022
+            description: Employee performance rating for 2022.
 
-          - name: evaluacion_2021
-            description: Resultado de evaluación del empleado correspondiente al año 2021.
+          - name: performance_rating_2021
+            description: Employee performance rating for 2021.
 
-          - name: evaluacion_2020
-            description: Resultado de evaluación del empleado correspondiente al año 2020.
+          - name: performance_rating_2020
+            description: Employee performance rating for 2020.
 
-          - name: rotacion
-            description: Indicador numérico asociado a la rotación del empleado.
+          - name: turnover_flag
+            description: Numeric indicator showing whether employee turnover occurred.
             tests:
               - accepted_values:
                   values: [0, 1]
                   quote: false
 
-
-      - name: src_rrhh_nominas
+      - name: src_hr_payroll
         description: >
-          Tabla raw de nóminas. Contiene información de liquidaciones,
-          importes salariales, horas, descuentos y coste estimado de empresa.
+          Payroll records containing settlement status, compensation components,
+          paid hours, deductions, gross pay, and estimated employer cost.
         columns:
-          - name: sistema_origen
-            description: Sistema desde el que procede el registro.
+          - name: source_system
+            description: Operational system from which the record originated.
             tests:
               - not_null
 
-          - name: fecha_extraccion
-            description: Fecha en la que se extrajo la información desde el sistema origen.
+          - name: extraction_date
+            description: Date on which the record was extracted from the source system.
             tests:
               - not_null
 
-          - name: recibo_nomina_id
-            description: Identificador del recibo de nómina.
+          - name: payroll_receipt_id
+            description: Unique payroll receipt identifier.
             tests:
               - not_null
               - unique
 
-          - name: periodo
-            description: Periodo de liquidación de la nómina.
+          - name: payroll_period
+            description: Payroll settlement period in year-month format.
             tests:
               - not_null
 
-          - name: legajo
-            description: Identificador interno del empleado.
+          - name: employee_id
+            description: Internal employee identifier.
             tests:
               - not_null
               - relationships:
-                  to: source('rrhh', 'src_rrhh_personal')
-                  field: legajo
+                  to: source('hr', 'src_hr_employees')
+                  field: employee_id
 
-          - name: nombre
-            description: Nombre del empleado.
+          - name: first_name
+            description: Employee first name.
 
-          - name: apellido
-            description: Apellido del empleado.
+          - name: last_name
+            description: Employee last name.
 
-          - name: departamento_codigo
-            description: Código del departamento asociado a la nómina.
+          - name: department_code
+            description: Department code associated with the payroll record.
             tests:
               - relationships:
-                  to: source('rrhh', 'src_rrhh_departamentos')
-                  field: departamento_codigo
+                  to: source('hr', 'src_hr_departments')
+                  field: department_code
 
-          - name: tipo_empleado
-            description: Tipo o categoría del empleado.
+          - name: employment_type
+            description: Employee engagement category.
 
-          - name: consultora_cuit
-            description: Identificador fiscal de la consultora asociada al empleado, si aplica.
+          - name: consulting_firm_tax_id
+            description: Tax identifier of the associated consulting firm, when applicable.
             tests:
               - relationships:
-                  to: source('rrhh', 'src_rrhh_consultoras')
-                  field: consultora_cuit
+                  to: source('hr', 'src_hr_consulting_firms')
+                  field: consulting_firm_tax_id
 
-          - name: estado_liquidacion
-            description: Estado de la liquidación de la nómina.
+          - name: payroll_status
+            description: Processing status of the payroll record.
 
-          - name: dias_liquidados
-            description: Número de días liquidados en el periodo.
+          - name: paid_days
+            description: Number of days paid in the payroll period.
 
-          - name: salario_mensual
-            description: Salario mensual utilizado para la liquidación.
+          - name: monthly_salary
+            description: Monthly salary used in the payroll calculation.
 
-          - name: horas_base
-            description: Número de horas ordinarias liquidadas.
+          - name: regular_hours
+            description: Number of regular hours included in the payroll calculation.
 
-          - name: importe_horas_base
-            description: Importe correspondiente a las horas ordinarias liquidadas.
+          - name: regular_hours_amount
+            description: Amount paid for regular hours.
 
-          - name: horas_extra
-            description: Número de horas extra liquidadas.
+          - name: overtime_hours
+            description: Number of overtime hours included in the payroll calculation.
 
-          - name: importe_horas_extra
-            description: Importe correspondiente a las horas extra liquidadas.
+          - name: overtime_amount
+            description: Amount paid for overtime hours.
 
-          - name: bono_productividad
-            description: Importe del bono de productividad aplicado en la liquidación.
+          - name: productivity_bonus
+            description: Productivity bonus included in the payroll calculation.
 
-          - name: descuento_ausencias
-            description: Importe descontado por ausencias.
+          - name: absence_deduction
+            description: Amount deducted for employee absences.
 
-          - name: total_bruto
-            description: Importe bruto total de la nómina.
+          - name: gross_pay
+            description: Total gross payroll amount.
 
-          - name: coste_empresa_estimado
-            description: Coste estimado de empresa asociado a la nómina.
+          - name: estimated_employer_cost
+            description: Estimated total employer cost associated with the payroll record.
 
-
-      - name: src_rrhh_evaluaciones
+      - name: src_hr_performance_reviews
         description: >
-          Tabla raw de evaluaciones de empleados. Contiene resultados de evaluación
-          por empleado, departamento y año.
+          Annual employee performance-review results by employee and department.
         columns:
-          - name: sistema_origen
-            description: Sistema desde el que procede el registro.
+          - name: source_system
+            description: Operational system from which the record originated.
             tests:
               - not_null
 
-          - name: fecha_extraccion
-            description: Fecha en la que se extrajo la información desde el sistema origen.
+          - name: extraction_date
+            description: Date on which the record was extracted from the source system.
             tests:
               - not_null
 
-          - name: nro_linea_archivo
-            description: Número de línea del archivo origen, útil para trazabilidad y depuración.
+          - name: source_row_number
+            description: Source-file row number used for traceability and troubleshooting.
 
-          - name: legajo
-            description: Identificador interno del empleado evaluado.
+          - name: employee_id
+            description: Internal identifier of the reviewed employee.
             tests:
               - not_null
               - relationships:
-                  to: source('rrhh', 'src_rrhh_personal')
-                  field: legajo
+                  to: source('hr', 'src_hr_employees')
+                  field: employee_id
 
-          - name: nombre
-            description: Nombre del empleado evaluado.
+          - name: first_name
+            description: Reviewed employee first name.
 
-          - name: apellido
-            description: Apellido del empleado evaluado.
+          - name: last_name
+            description: Reviewed employee last name.
 
-          - name: departamento_codigo
-            description: Código del departamento asociado a la evaluación.
+          - name: department_code
+            description: Department code associated with the performance review.
             tests:
               - relationships:
-                  to: source('rrhh', 'src_rrhh_departamentos')
-                  field: departamento_codigo
+                  to: source('hr', 'src_hr_departments')
+                  field: department_code
 
-          - name: anio_evaluacion
-            description: Año al que corresponde la evaluación.
+          - name: review_year
+            description: Calendar year to which the performance review applies.
             tests:
               - not_null
               - accepted_values:
                   values: [2020, 2021, 2022, 2023, 2024]
                   quote: false
 
-          - name: resultado_evaluacion
-            description: Resultado obtenido por el empleado en la evaluación.
+          - name: performance_rating
+            description: Rating assigned to the employee in the performance review.
 
-
-      - name: src_rrhh_consultoras
+      - name: src_hr_consulting_firms
         description: >
-          Tabla raw de consultoras proveedoras. Contiene identificadores fiscales,
-          razón social y estado del proveedor.
+          Consulting-firm vendor catalog containing tax identifiers, legal names,
+          and vendor status.
         columns:
-          - name: consultora_cuit
-            description: Identificador fiscal de la consultora.
+          - name: consulting_firm_tax_id
+            description: Tax identifier of the consulting firm.
             tests:
               - not_null
               - unique
 
-          - name: consultora_razon_social
-            description: Razón social de la consultora.
+          - name: consulting_firm_legal_name
+            description: Registered legal name of the consulting firm.
             tests:
               - not_null
 
-          - name: estado_proveedor
-            description: Estado actual de la consultora como proveedor.
+          - name: vendor_status
+            description: Current vendor status of the consulting firm.
 
-          - name: fecha_extraccion
-            description: Fecha en la que se extrajo la información desde el sistema origen.
+          - name: extraction_date
+            description: Date on which the record was extracted from the source system.
             tests:
               - not_null
 
-          - name: sistema_origen
-            description: Sistema desde el que procede el registro.
+          - name: source_system
+            description: Operational system from which the record originated.
             tests:
               - not_null
 
-
-      - name: src_rrhh_departamentos
-        description: >
-          Tabla raw de departamentos. Contiene códigos, descripciones y estado
-          de actividad de los departamentos.
+      - name: src_hr_departments
+        description: Department catalog containing department codes, names, and activity status.
         columns:
-          - name: departamento_codigo
-            description: Código identificador del departamento.
+          - name: department_code
+            description: Unique department code.
             tests:
               - not_null
               - unique
 
-          - name: departamento_descripcion
-            description: Descripción o nombre del departamento.
+          - name: department_name
+            description: Department name.
             tests:
               - not_null
 
-          - name: activo
-            description: Indicador de si el departamento está activo.
+          - name: is_active
+            description: Raw indicator showing whether the department is active.
 
-          - name: fecha_extraccion
-            description: Fecha en la que se extrajo la información desde el sistema origen.
+          - name: extraction_date
+            description: Date on which the record was extracted from the source system.
             tests:
               - not_null
 
-          - name: sistema_origen
-            description: Sistema desde el que procede el registro.
+          - name: source_system
+            description: Operational system from which the record originated.
             tests:
               - not_null
