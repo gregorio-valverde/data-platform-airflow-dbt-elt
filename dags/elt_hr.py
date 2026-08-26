@@ -15,7 +15,7 @@ elt_dag = DagEltGenerator(
         "depends_on_past": False,
         "email_on_failure": False,
         "email_on_retry": False,
-        "retries": 1,
+        "retries": 0,
     },
     tags=["elt", "hr", "postgres", "raw"],
     default_conn_id="dw_postgres",
