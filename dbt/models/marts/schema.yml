@@ -1,0 +1,242 @@
+version: 2
+
+models:
+  - name: dim_hr_consulting_firms
+    description: >
+      Final Human Resources dimension containing the consulting firms associated
+      with external contractors. Each row represents one consulting firm.
+    columns:
+      - name: id_consulting_firm_tax
+        description: Tax identifier used as the business key of the consulting firm.
+        tests:
+          - not_null
+          - unique
+
+      - name: name_consulting_firm
+        description: Legal or registered name of the consulting firm.
+        tests:
+          - not_null
+
+      - name: active
+        description: Boolean indicator showing whether the consulting firm is currently active as a vendor.
+
+      - name: extraction_date
+        description: Date on which the source record was extracted.
+        tests:
+          - not_null
+
+      - name: source_system
+        description: Operational source system from which the record originated.
+        tests:
+          - not_null
+
+  - name: dim_hr_departments
+    description: >
+      Final Human Resources dimension containing the corporate department catalog.
+      Each row represents one department.
+    columns:
+      - name: id_department
+        description: Department business key.
+        tests:
+          - not_null
+          - unique
+
+      - name: name_department
+        description: Department name.
+        tests:
+          - not_null
+
+      - name: active
+        description: Boolean indicator showing whether the department is active.
+
+      - name: extraction_date
+        description: Date on which the source record was extracted.
+        tests:
+          - not_null
+
+      - name: source_system
+        description: Operational source system from which the record originated.
+        tests:
+          - not_null
+
+  - name: dim_hr_employees
+    description: >
+      Final employee dimension used to analyze workforce structure, employment type,
+      consulting-firm assignment, compensation reference data, and turnover status.
+      Each row represents one employee.
+    columns:
+      - name: id_employee
+        description: Internal employee business key.
+        tests:
+          - not_null
+          - unique
+
+      - name: id_department
+        description: Department to which the employee is assigned.
+        tests:
+          - relationships:
+              to: ref('dim_hr_departments')
+              field: id_department
+
+      - name: id_consulting_firm_tax
+        description: Tax identifier of the consulting firm associated with the employee, when the employee is an external contractor.
+        tests:
+          - relationships:
+              to: ref('dim_hr_consulting_firms')
+              field: id_consulting_firm_tax
+
+      - name: name_employee
+        description: Employee full name generated from first and last name.
+
+      - name: employment_type
+        description: Employment or engagement category, such as Permanent or Contractor.
+
+      - name: salary
+        description: Annual salary reference for salaried employees. It is null for hourly contractors in the synthetic source data.
+
+      - name: hourly_rate
+        description: Standard hourly rate for hourly contractors. It is null for salaried employees in the synthetic source data.
+
+      - name: overtime_hourly_rate
+        description: Overtime hourly rate for hourly contractors. It is null for salaried employees in the synthetic source data.
+
+      - name: is_turnover
+        description: Boolean indicator showing whether the employee is marked as turnover in the source dataset.
+
+      - name: extraction_date
+        description: Date on which the source record was extracted.
+        tests:
+          - not_null
+
+      - name: source_system
+        description: Operational source system from which the record originated.
+        tests:
+          - not_null
+
+  - name: fct_hr_payroll
+    description: >
+      Final payroll fact table at payroll-receipt grain. It contains one row per
+      payroll receipt and exposes payroll period, employee and organizational keys,
+      compensation components, gross pay, and estimated employer cost.
+    columns:
+      - name: id_payroll
+        description: Unique payroll receipt identifier.
+        tests:
+          - not_null
+          - unique
+
+      - name: date_payroll
+        description: First day of the payroll period, standardized as a date.
+        tests:
+          - not_null
+
+      - name: id_employee
+        description: Employee associated with the payroll receipt.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_hr_employees')
+              field: id_employee
+
+      - name: id_department
+        description: Department associated with the payroll receipt at extraction time.
+        tests:
+          - relationships:
+              to: ref('dim_hr_departments')
+              field: id_department
+
+      - name: id_consulting_firm_tax
+        description: Consulting-firm tax identifier for contractor payroll records, when applicable.
+        tests:
+          - relationships:
+              to: ref('dim_hr_consulting_firms')
+              field: id_consulting_firm_tax
+
+      - name: employment_type
+        description: Employment or engagement category associated with the payroll receipt.
+
+      - name: status
+        description: Payroll processing status.
+
+      - name: paid_days
+        description: Number of paid days included in the payroll period.
+
+      - name: monthly_salary
+        description: Monthly salary component. In the synthetic dataset this is primarily used for salaried employees.
+
+      - name: regular_hours
+        description: Number of regular hours included in the payroll receipt.
+
+      - name: regular_hours_amount
+        description: Amount paid for regular hours.
+
+      - name: overtime_hours
+        description: Number of overtime hours included in the payroll receipt.
+
+      - name: overtime_amount
+        description: Amount paid for overtime hours.
+
+      - name: productivity_bonus
+        description: Productivity bonus included in the payroll receipt.
+
+      - name: absence_deduction
+        description: Amount deducted due to absences.
+
+      - name: gross_pay
+        description: Gross payroll amount reported by the source system.
+
+      - name: estimated_employer_cost
+        description: Estimated total employer cost associated with the payroll receipt.
+
+      - name: calculated_gross_pay
+        description: Gross pay recalculated from regular-hours amount, overtime amount, productivity bonus, and absence deduction.
+
+      - name: employer_cost_variance
+        description: Difference between estimated employer cost and source-reported gross pay.
+
+      - name: extraction_date
+        description: Date on which the source record was extracted.
+        tests:
+          - not_null
+
+      - name: source_system
+        description: Operational source system from which the record originated.
+        tests:
+          - not_null
+
+  - name: fct_hr_performance_reviews
+    description: >
+      Final performance-review fact table at employee-year grain. Each row represents
+      one employee performance review for one calendar year.
+    columns:
+      - name: id_employee
+        description: Employee associated with the performance review.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_hr_employees')
+              field: id_employee
+
+      - name: review_year
+        description: Calendar year to which the performance review applies.
+        tests:
+          - not_null
+          - accepted_values:
+              values: [2020, 2021, 2022, 2023, 2024]
+              quote: false
+
+      - name: performance_rating
+        description: Performance rating assigned to the employee for the review year.
+
+      - name: has_performance_rating
+        description: Boolean indicator showing whether a performance rating is available for the employee-year record.
+
+      - name: extraction_date
+        description: Date on which the source record was extracted.
+        tests:
+          - not_null
+
+      - name: source_system
+        description: Operational source system from which the record originated.
+        tests:
+          - not_null

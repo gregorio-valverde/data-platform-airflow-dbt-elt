@@ -85,7 +85,7 @@ def _build_dbt_command(
 ) -> str:
     command = (
         f"cd {dbt_project_dir} && "
-        "dbt run "
+        "dbt build "
         f"--project-dir {dbt_project_dir} "
         f"--profiles-dir {dbt_profiles_dir} "
         f"--target {dbt_target} "

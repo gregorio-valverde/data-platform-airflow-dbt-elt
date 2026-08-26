@@ -85,7 +85,7 @@ Then run:
 ```bash
 cd /usr/local/airflow/dbt
 dbt debug --target dev
-dbt run --target dev --select tag:hr
+dbt build --target dev --select tag:hr
 dbt test --target dev --select tag:hr
 ```
 
