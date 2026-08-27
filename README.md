@@ -1,4 +1,4 @@
-# Airflow + dbt ELT Framework
+# Airflow + dbt ELT Data Platform
 
 A portfolio-ready ELT framework for loading synthetic Human Resources data into PostgreSQL with Apache Airflow 3 and transforming it with dbt.
 
