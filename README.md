@@ -8,25 +8,26 @@ A portfolio-ready ELT framework for loading synthetic Human Resources data into 
 flowchart TD
     A["Synthetic HR CSV files"] --> B["Airflow extraction tasks"]
     B --> C["PostgreSQL raw schema"]
-    C --> D["dbt staging models"]
-    D --> E["Tested analytical views"]
+    C --> D["dbt staging views"]
+    D --> E["dbt analytical marts"]
 ```
 
 - Airflow orchestrates extraction, schema synchronization, loading, and dbt execution.
 - PostgreSQL stores both Airflow metadata and the analytical data warehouse.
 - YAML contracts define raw-table columns, data types, nullability, and indexes.
-- dbt cleans, standardizes, tests, and exposes the raw data as staging views.
+- dbt cleans and standardizes raw data in staging views and exposes business-ready mart tables.
+- dbt model documentation and data tests are defined in the project alongside the transformations.
 - Docker and Astronomer provide a reproducible local environment.
 
 ## Included data domains
 
-| Dataset | Raw table | dbt model |
-|---|---|---|
-| Employees | `raw.src_hr_employees` | `stg_hr_employees` |
-| Payroll | `raw.src_hr_payroll` | `stg_hr_payroll` |
-| Performance reviews | `raw.src_hr_performance_reviews` | `stg_hr_performance_reviews` |
-| Departments | `raw.src_hr_departments` | `stg_hr_departments` |
-| Consulting firms | `raw.src_hr_consulting_firms` | `stg_hr_consulting_firms` |
+| Dataset | Raw table | Staging model | Mart model |
+|---|---|---|---|
+| Employees | `raw.src_hr_employees` | `stg_hr_employees` | `dim_hr_employees` |
+| Payroll | `raw.src_hr_payroll` | `stg_hr_payroll` | `fct_hr_payroll` |
+| Performance reviews | `raw.src_hr_performance_reviews` | `stg_hr_performance_reviews` | `fct_hr_performance_reviews` |
+| Departments | `raw.src_hr_departments` | `stg_hr_departments` | `dim_hr_departments` |
+| Consulting firms | `raw.src_hr_consulting_firms` | `stg_hr_consulting_firms` | `dim_hr_consulting_firms` |
 
 All included records are synthetic and intended exclusively for demonstration and testing.
 
@@ -35,10 +36,11 @@ All included records are synthetic and intended exclusively for demonstration an
 ```text
 .
 ├── dags/                         # Airflow DAG definitions
-├── dbt/                          # dbt project, profile, sources, and models
+├── dbt/                          # dbt project, sources, staging models, marts, tests, and docs
 ├── include/connections/postgres/ # PostgreSQL clients and load utilities
 ├── include/data/                 # Synthetic CSV source files
-└── include/elt/                  # Extractors, pipeline contracts, and DAG factory
+├── include/elt/                  # Extractors, pipeline contracts, and DAG factory
+└── scripts/                      # One-off dataset maintenance utilities
 ```
 
 ## Requirements
@@ -72,6 +74,16 @@ Open the Airflow UI at <http://localhost:8080> and trigger the `elt_hr` DAG.
 
 The sample environment configures the analytical database as `dw_hr` with the local-only credentials defined in `example.env`.
 
+## Normalize legacy contractor compensation data
+
+Earlier versions of the synthetic source dataset generated contractor hourly rates and payroll monetary amounts at 100 times their intended scale. If your local CSV files still contain contractor monthly payroll values in the hundreds of thousands, run:
+
+```bash
+python scripts/normalize_contractor_compensation.py
+```
+
+The script normalizes contractor rates and payroll amounts, keeps permanent-employee values unchanged, creates `.bak` copies by default, and is guarded against applying the 100x correction twice.
+
 ## Run dbt manually
 
 Enter the Airflow container:
@@ -85,9 +97,11 @@ Then run:
 ```bash
 cd /usr/local/airflow/dbt
 dbt debug --target dev
-dbt build --target dev --select tag:hr
+dbt run --target dev --select tag:hr
 dbt test --target dev --select tag:hr
 ```
+
+The mart layer is documented in `dbt/models/marts/schema.yml`. The project also contains a payroll reconciliation test that checks whether source gross pay matches the sum of its compensation components.
 
 ## Select pipelines at runtime
 
