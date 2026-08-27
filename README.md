@@ -74,16 +74,6 @@ Open the Airflow UI at <http://localhost:8080> and trigger the `elt_hr` DAG.
 
 The sample environment configures the analytical database as `dw_hr` with the local-only credentials defined in `example.env`.
 
-## Normalize legacy contractor compensation data
-
-Earlier versions of the synthetic source dataset generated contractor hourly rates and payroll monetary amounts at 100 times their intended scale. If your local CSV files still contain contractor monthly payroll values in the hundreds of thousands, run:
-
-```bash
-python scripts/normalize_contractor_compensation.py
-```
-
-The script normalizes contractor rates and payroll amounts, keeps permanent-employee values unchanged, creates `.bak` copies by default, and is guarded against applying the 100x correction twice.
-
 ## Run dbt manually
 
 Enter the Airflow container:
